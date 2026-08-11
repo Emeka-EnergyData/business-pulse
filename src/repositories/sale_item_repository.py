@@ -1,0 +1,42 @@
+from uuid import UUID
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from src.database.models.sale_item import SaleItem
+
+class SaleItemRepository:
+    def __init__(self, db: Session):
+        self.db = db
+        
+    def create(self, sale_item: SaleItem) -> SaleItem:
+        self.db.add(sale_item)
+        self.db.commit()
+        self.db.refresh(sale_item)
+        
+        return sale_item
+    
+    def get_by_id(self, sale_item_id: UUID) -> SaleItem | None:
+        stmt = select(SaleItem).where(SaleItem.id == sale_item_id)
+        
+        return self.db.scalar(stmt)
+    
+    def get_all(self) -> list[SaleItem]:
+        return self.db.query(SaleItem).all()
+    
+    def update(self, sale_item: SaleItem) -> SaleItem:
+        self.db.commit()
+        self.db.refresh(sale_item)
+        
+        return sale_item
+    
+    def delete(self, sale_item_id:UUID) -> bool:
+        sale_item = self.get_by_id(sale_item_id)
+        
+        if sale_item is None:
+            return False
+        
+        self.db.delete(sale_item)
+        self.db.commit()
+        
+        return True
+        
+        

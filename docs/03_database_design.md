@@ -413,6 +413,7 @@ Instead, products are stored inside the PurchaseItem table.
 | purchase_date | DATE | No | Date received |
 | notes | TEXT | Yes | Additional notes |
 | created_at | TIMESTAMP | No | Record creation |
+| updated_at | TIMESTAMP | No | Last modification|
 
 ---
 
@@ -656,7 +657,7 @@ Products are stored in the SaleItem table.
 | collection_status | VARCHAR(20) | No | COLLECTED, PENDING_COLLECTION |
 | notes | TEXT | Yes | Additional notes |
 | created_at | TIMESTAMP | No | Record creation |
-
+| updated_at | TIMESTAMP | No | Last modification |
 ---
 
 ### Primary Key
@@ -709,6 +710,25 @@ Payment (Many)
     - PAID  
     - PARTIAL  
     - UNPAID
+
+### Constraints
+
+- `subtotal >= 0`
+- `discount >= 0`
+- `total_amount >= 0`
+- `amount_paid >= 0`
+- `remaining_balance >= 0`
+- `amount_paid <= total_amount`
+- `payment_status` must be one of the allowed payment statuses
+- `collection_status` must be one of the allowed collection statuses
+- `customer_id` references `customers.id`
+- `id` is the primary key
+
+### Relationships
+
+- A **Sale** may belong to one **Customer**
+- A **Customer** can have many **Sales**
+- A **Sale** will have one or more **Sale Items**
 
 ### Business Rules
 
@@ -829,6 +849,8 @@ A sale can have multiple payment records.
 | payment_date | TIMESTAMP | No | Payment date |
 | reference | VARCHAR(100) | Yes | Transaction reference |
 | notes | TEXT | Yes | Additional notes |
+| created_at | TIMESTAMP | No | Record creation |
+| updated_at | TIMESTAMP | No | Last modification |
 
 ---
 
@@ -906,6 +928,7 @@ This table provides a complete audit trail of inventory history.
 | reference_id | UUID | Yes | Related business record |
 | movement_date | TIMESTAMP | No | Date of movement |
 | notes | TEXT | Yes | Additional information |
+ created_at | TIMESTAMP | No | Record creation |
 
 ---
 

@@ -1,0 +1,42 @@
+from uuid import UUID
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from src.database.models.customer import Customer
+
+class CustomerRepository:
+    def __init__(self, db: Session):
+        self.db = db
+        
+    def create(self, customer: Customer) -> Customer:
+        self.db.add(customer)
+        self.db.commit()
+        self.db.refresh(customer)
+        
+        return customer
+    
+    def get_by_id(self, customer_id: UUID) -> Customer | None:
+        stmt = select(Customer).where(Customer.id == customer_id)
+        
+        return self.db.scalar(stmt)
+    
+    def get_all(self) -> list[Customer]:
+        return self.db.query(Customer).all()
+    
+    def update(self, customer: Customer) -> Customer:
+        self.db.commit()
+        self.db.refresh(customer)
+        
+        return customer
+    
+    def delete(self, customer_id:UUID) -> bool:
+        customer = self.get_by_id(customer_id)
+        
+        if customer is None:
+            return False
+        
+        self.db.delete(customer)
+        self.db.commit()
+        
+        return True
+        
+        
