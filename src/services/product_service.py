@@ -9,7 +9,7 @@ class ProductService:
         self.product_repository = product_repository
 
     def create_product(self, 
-                       category_id: int, 
+                       category_id: UUID, 
                        name: str, 
                        cost_price: Decimal, 
                        target_price: Decimal, 
@@ -41,7 +41,7 @@ class ProductService:
         
         return self.product_repository.create(new_product)
 
-    def get_product(self, product_id: int) -> Product:
+    def get_product(self, product_id: UUID) -> Product | None:
         """
         Retrieve a product by its ID.
 
@@ -66,15 +66,6 @@ class ProductService:
         """
         return self.product_repository.get_active()
 
-    def delete_product(self, product_id: int) -> bool:
-        """
-        Delete a product by its ID.
-
-        :param product_id: The ID of the product to delete.
-        :return: True if deletion was successful, else False.
-        """
-        return self.product_repository.delete(product_id)
-    
     def update_product(self, 
                        product_id: UUID,
                        *, 

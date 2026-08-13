@@ -27,7 +27,31 @@ class ProductRepository:
         return list(self.db.scalars(stmt).all())
     
     def update(self, product: Product) -> Product:
-        self.db.flush()
+        self.db.commit()
         self.db.refresh(product)
         return product
     
+    def increase_stock(self, product_id: UUID, quantity: int) -> Product| None:
+        product = self.get_by_id(product_id)
+        
+        if product is None:
+            return None
+        
+        product.current_stock += quantity
+        
+        self.db.flush()
+        
+        return product
+    
+    def decrease_stock(self, product_id: UUID, quantity:int) -> Product| None:
+        product = self.get_by_id(product_id)
+                
+        if product is None:
+            return None
+    
+        product.current_stock -= quantity
+                
+        self.db.flush()
+
+        return product
+            

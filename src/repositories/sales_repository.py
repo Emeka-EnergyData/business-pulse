@@ -24,19 +24,7 @@ class SalesRepository:
     
     def update(self, sale: Sale) -> Sale:
         self.db.commit()
-        self.db.refresh(Sale)
+        self.db.refresh(sale)
         
-        return sale
-    
-    def delete(self, sale_id:UUID) -> bool:
-        sale = self.get_by_id(sale_id)
-        
-        if sale is None:
-            return False
-        
-        self.db.delete(sale)
-        self.db.commit()
-        
-        return True
-        
+        return sal    
         

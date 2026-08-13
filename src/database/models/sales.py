@@ -31,7 +31,7 @@ class Sale(Base):
     )
     
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    customer_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("customers.id"), nullable=True)
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("customers.id"), nullable=True)
     sale_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     discount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
@@ -45,5 +45,5 @@ class Sale(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     customer: Mapped["Customer"] = relationship(back_populates="sales")
-    items: Mapped[list["SaleItem"]] = relationship(back_populates="sale", cascade="all, delete-orphan")
+    items: Mapped[list["SaleItem"]] = relationship(back_populates="sale")
     payments: Mapped[list["Payment"]] = relationship(back_populates="sale")

@@ -9,8 +9,7 @@ class PaymentRepository:
         
     def create(self, payment: Payment) -> Payment:
         self.db.add(payment)
-        self.db.commit()
-        self.db.refresh(payment)
+        self.db.flush()
         
         return payment
     
@@ -20,23 +19,5 @@ class PaymentRepository:
         return self.db.scalar(stmt)
     
     def get_all(self) -> list[Payment]:
-        return self.db.query(Payment).all()
-    
-    def update(self, payment:Payment) -> Payment:
-        self.db.commit()
-        self.db.refresh(payment)
-        
-        return payment
-    
-    def delete(self, payment_id:UUID) -> bool:
-        payment = self.get_by_id(payment_id)
-        
-        if payment is None:
-            return False
-        
-        self.db.delete(payment)
-        self.db.commit()
-        
-        return True
-        
+        return self.db.query(Payment).all()    
         

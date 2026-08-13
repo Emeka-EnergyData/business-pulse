@@ -2,6 +2,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from src.database.models.category import Category
+from src.database.models.product import Product
 
 class CategoryRepository:
     def __init__(self, db: Session):
@@ -38,5 +39,11 @@ class CategoryRepository:
         self.db.commit()
         
         return True
-        
+    
+    def has_products(self, category_id: UUID) -> bool:
+        stmt = (select(Product.id)
+                        .where(Product.category_id == category_id)
+                        .limit(1))
+                
+        return self.db.scalar(stmt) is not None
         

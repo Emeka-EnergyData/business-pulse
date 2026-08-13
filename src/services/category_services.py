@@ -28,12 +28,14 @@ class CategoryService:
     
     def get_category(self, category_id:UUID) -> Category | None:
         """
-        Retrieve all categories
+        Retrieve a category by ID
         """
-        
         return self.category_repository.get_by_id(category_id)
     
     def get_all_categories(self) -> list[Category]:
+        """
+        Retrieve all categories
+        """
         return self.category_repository.get_all()
     
     def update_category(
@@ -74,8 +76,7 @@ class CategoryService:
         if category is None:
             raise ValueError(f"Category with ID {category_id} does not exist")
         
+        if self.category_repository.has_products(category_id):
+                    raise ValueError("Category cannot be deleted because products exists")
+
         return self.category_repository.delete(category_id)
-                    
-            
-        
-        

@@ -120,13 +120,15 @@ PRODUCT ||--o{ PURCHASE_ITEM : received_as
 
 CUSTOMER ||--o{ SALE : makes
 
+PRODUCT ||--o{ STOCK_MOVEMENT : updates
+
 SALE ||--|{ SALE_ITEM : contains
 
 PRODUCT ||--o{ SALE_ITEM : sold_as
 
 SALE ||--o{ PAYMENT : receives
 
-PRODUCT ||--o{ STOCK_MOVEMENT : updates
+
 ```
 
 ## Table Definitions
@@ -620,7 +622,7 @@ Sale (Many)
 - Duplicate customer names are allowed because different customers may share the same name.
 
 
-## Business Rules
+### Business Rules
 - Walk-in customers do not need a customer record.
 - A customer may have many sales.
 - Customer records should never be deleted if sales exist.
@@ -734,8 +736,9 @@ Payment (Many)
 
 ---
 
-- One sale can contain many products.
-- A sale may belong to a customer.- Walk-in sales are allowed.
+- One sale can contain many sales item.
+- A sale may belong to a customer.
+- Walk-in sales are allowed.
 - A sale becomes complete only after at least one SaleItem exists.
 - Sales are permanent business records and should never be deleted.
 
@@ -899,7 +902,7 @@ Payment (Many)
     - amount_paid  
     - remaining_balance  
     - payment_status
-    - Payments are permanent financial records.
+- Payments are permanent financial records.
 
 ---
 
@@ -928,7 +931,7 @@ This table provides a complete audit trail of inventory history.
 | reference_id | UUID | Yes | Related business record |
 | movement_date | TIMESTAMP | No | Date of movement |
 | notes | TEXT | Yes | Additional information |
- created_at | TIMESTAMP | No | Record creation |
+| created_at | TIMESTAMP | No | Record creation |
 
 ---
 
@@ -981,8 +984,6 @@ StockMovement (Many)
 - Product.current_stock is updated whenever a StockMovement is created.
 - Stock history is never deleted.
 
----
-
 ## Version 1 Assumptions
 
 The MVP makes the following assumptions:
@@ -1003,7 +1004,7 @@ These assumptions keep the initial implementation simple while leaving room for 
 
 This section documents implementation decisions that affect the PostgreSQL schema and application logic.
 
-## UUID Strategy
+### UUID Strategy
 
 All primary keys use UUID v4.
 
@@ -1014,7 +1015,7 @@ Reasons:
 - Easier migration to cloud deployment.
 - Prevents predictable sequential IDs.
 
-## Timestamp Strategy
+### Timestamp Strategy
 
 Every table should contain:
 
@@ -1025,7 +1026,7 @@ except tables where updates are unnecessary (for example Payment).
 
 All timestamps are stored in UTC.
 
-## Soft Deletes
+### Soft Deletes
 
 Version 1 does not support soft deletes.
 
@@ -1044,7 +1045,7 @@ Products may be marked inactive using:
 
 is_active = false
 
-## Inventory Rules
+### Inventory Rules
 
 Inventory never changes directly.
 
@@ -1061,7 +1062,7 @@ Every operation:
 1. Creates a StockMovement.
 2. Updates Product.current_stock.
 
-## Pricing Rules
+### Pricing Rules
 
 Product stores:
 
@@ -1076,7 +1077,7 @@ SaleItem stores:
 
 Historical sales must never change if product prices change later.
 
-## Payment Rules
+### Payment Rules
 
 Payment history is immutable.
 
@@ -1084,7 +1085,7 @@ A payment cannot be edited after creation.
 
 Corrections are made by creating adjustment records.
 
-## Reporting Strategy
+### Reporting Strategy
 
 Reports should be generated from transactional tables.
 

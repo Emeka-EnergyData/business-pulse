@@ -9,8 +9,7 @@ class PurchaseItemRepository:
         
     def create(self, purchase_item: PurchaseItem) -> PurchaseItem:
         self.db.add(purchase_item)
-        self.db.commit()
-        self.db.refresh(purchase_item)
+        self.db.flush()
         
         return purchase_item
     
@@ -20,23 +19,4 @@ class PurchaseItemRepository:
         return self.db.scalar(stmt)
     
     def get_all(self) -> list[PurchaseItem]:
-        return self.db.query(PurchaseItem).all()
-    
-    def update(self, purchase_item: PurchaseItem) -> PurchaseItem:
-        self.db.commit()
-        self.db.refresh(purchase_item)
-        
-        return purchase_item
-    
-    def delete(self, purchase_item_id:UUID) -> bool:
-        purchase_item = self.get_by_id(purchase_item_id)
-        
-        if purchase_item is None:
-            return False
-        
-        self.db.delete(purchase_item)
-        self.db.commit()
-        
-        return True
-        
-        
+        return self.db.query(PurchaseItem).all()    

@@ -27,16 +27,3 @@ class PurchaseRepository:
         self.db.refresh(purchase)
         
         return purchase
-    
-    def delete(self, purchase_id:UUID) -> bool:
-        purchase = self.get_by_id(purchase_id)
-        
-        if purchase is None:
-            return False
-        
-        self.db.delete(purchase)
-        self.db.commit()
-        
-        return True
-        
-        
