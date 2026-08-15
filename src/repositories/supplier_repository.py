@@ -6,8 +6,7 @@ from src.database.models.supplier import Supplier
 from src.database.models.purchase import Purchase
 
 class SupplierRepository:
-    
-    def __int__(self, db: Session):
+    def __init__(self, db : Session):
         self.db = db
         
     def create_supplier(self, supplier:Supplier) -> Supplier:

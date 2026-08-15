@@ -18,9 +18,7 @@ def main():
         category_service = CategoryService(category_repository)
         product_service = ProductService(product_repository)
 
-        # --------------------------------------------------
         # 1. Create a category for the product
-        # --------------------------------------------------
 
         category = category_service.create_category(
             name="Test Shoes",
@@ -31,9 +29,7 @@ def main():
         print(f"ID: {category.id}")
         print(f"Name: {category.name}")
 
-        # --------------------------------------------------
         # 2. Create product
-        # --------------------------------------------------
 
         product = product_service.create_product(
             category_id=category.id,
@@ -53,9 +49,7 @@ def main():
         print(f"Current stock: {product.current_stock}")
         print(f"Active: {product.is_active}")
 
-        # --------------------------------------------------
         # 3. Get product by ID
-        # --------------------------------------------------
 
         retrieved = product_service.get_product(product.id)
 
@@ -63,9 +57,7 @@ def main():
         print(f"ID: {retrieved.id}")
         print(f"Name: {retrieved.name}")
 
-        # --------------------------------------------------
         # 4. Get all products
-        # --------------------------------------------------
 
         products = product_service.get_all_products()
 
@@ -78,9 +70,7 @@ def main():
                 f"Active: {item.is_active}"
             )
 
-        # --------------------------------------------------
         # 5. Get active products
-        # --------------------------------------------------
 
         active_products = product_service.get_active_products()
 
@@ -92,9 +82,7 @@ def main():
                 f"Active: {item.is_active}"
             )
 
-        # --------------------------------------------------
         # 6. Update product
-        # --------------------------------------------------
 
         updated = product_service.update_product(
             product.id,
@@ -111,9 +99,7 @@ def main():
         print(f"Target price: {updated.target_price}")
         print(f"Minimum price: {updated.minimum_price}")
 
-        # --------------------------------------------------
         # 7. Deactivate product
-        # --------------------------------------------------
 
         deactivated = product_service.deactivate_product(product.id)
 
@@ -121,9 +107,7 @@ def main():
         print(f"Name: {deactivated.name}")
         print(f"Active: {deactivated.is_active}")
 
-        # --------------------------------------------------
         # 8. Verify inactive product is not in active products
-        # --------------------------------------------------
 
         active_products_after_deactivation = (
             product_service.get_active_products()
@@ -137,9 +121,7 @@ def main():
         print("\n8. Active product verification")
         print(f"Product still active: {found}")
 
-        # --------------------------------------------------
         # 9. Test invalid minimum price
-        # --------------------------------------------------
 
         try:
             product_service.create_product(
@@ -154,9 +136,7 @@ def main():
             print("\n9. Invalid minimum price correctly rejected")
             print(f"Error: {e}")
 
-        # --------------------------------------------------
         # 10. Test invalid target price
-        # --------------------------------------------------
 
         try:
             product_service.create_product(
@@ -171,9 +151,7 @@ def main():
             print("\n10. Invalid target price correctly rejected")
             print(f"Error: {e}")
 
-        # --------------------------------------------------
         # 11. Test invalid update
-        # --------------------------------------------------
 
         try:
             product_service.update_product(
@@ -185,11 +163,7 @@ def main():
             print("\n11. Invalid product update correctly rejected")
             print(f"Error: {e}")
 
-        # --------------------------------------------------
         # 12. Test deactivating nonexistent product
-        # --------------------------------------------------
-
-       
 
         try:
             product_service.deactivate_product(uuid4())

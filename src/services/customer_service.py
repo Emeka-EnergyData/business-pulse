@@ -7,7 +7,7 @@ class CustomerService:
     def __init__(self, customer_repository:CustomerRepository):
         self.customer_repository = customer_repository
         
-    def create_supplier(
+    def create_customer(
         self,
         name: str,
         phone: str | None = None,
@@ -54,7 +54,7 @@ class CustomerService:
         notes: str | None = None,
     ) -> Customer:
         """
-        Update an existing supplier.
+        Update an existing customer.
         """
         
         customer = self.customer_repository.get_by_id(customer_id)
@@ -83,15 +83,15 @@ class CustomerService:
         
     def delete_customer(self, customer_id:UUID) -> bool:
         """ 
-        Delete acustomer only if thry have no sales
+        Delete a customer only if thry have no sales
         """
 
         customer = self.customer_repository.get_by_id(customer_id)
         
         if customer is None:
-            raise ValueError(f"Supplier with ID {customer_id} does not exist")
+            raise ValueError(f"Customer with ID {customer_id} does not exist")
         
         if self.customer_repository.has_sales(customer_id):
-            raise ValueError("Supplier cannot be deleted because purchase history exists")
+            raise ValueError("Customer cannot be deleted because purchase history exists")
         
         return self.customer_repository.delete(customer_id)

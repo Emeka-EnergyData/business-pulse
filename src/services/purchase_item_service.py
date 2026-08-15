@@ -24,10 +24,12 @@ class PurchaseItemService:
                              quantity: int,
                              unit_cost: Decimal
                             ) -> PurchaseItem:
+        
         """
         Create a purchase item.
         
-        A purchase item represents a product received as part of a purchase."""
+        A purchase item represents a product received as part of a purchase.
+        """
         
         if quantity <= 0:
             raise ValueError("Quantity must be greater tahn zero.")
@@ -75,7 +77,7 @@ class PurchaseItemService:
             db.rollback()
             raise
     
-    def get_purhcase_item (self, purchase_item_id: UUID) -> PurchaseItem | None:
+    def get_purchase_item (self, purchase_item_id: UUID) -> PurchaseItem | None:
         """ 
         Retrieve a purchase item by ID
         """
@@ -86,5 +88,3 @@ class PurchaseItemService:
         Retrieve all purchase items
         """
         return self.purchase_item_repository.get_all()
-    
-

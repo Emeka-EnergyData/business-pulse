@@ -26,5 +26,5 @@ class SalesRepository:
         self.db.commit()
         self.db.refresh(sale)
         
-        return sal    
+        return sale
         

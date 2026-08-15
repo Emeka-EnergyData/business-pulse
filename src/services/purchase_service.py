@@ -8,7 +8,7 @@ class PurchaseService:
     def __init__(self, purchase_repository:PurchaseRepository):
         self.purchase_repository = purchase_repository
         
-    def create_supplier(
+    def create_purchase(
         self,
         supplier_id: UUID,
         purchase_date: date,
@@ -36,6 +36,12 @@ class PurchaseService:
         
         return self.purchase_repository.create(purchase)
     
+    def get_purhcase (self, purchase_id: UUID) -> Purchase | None:
+            """ 
+            Retrieve a purchase item by ID
+            """
+            return self.purchase_repository.get_by_id(purchase_id)
+    
     def get_all_purchases(self) -> list[Purchase]:
         """
         Retrieve all purchase record.
@@ -43,7 +49,7 @@ class PurchaseService:
         
         return self.purchase_repository.get_all()
     
-    def update_supplier(
+    def update_purchase(
         self,
         purchase_id: UUID,
         *,

@@ -469,7 +469,6 @@ PurchaseItem (Many)
 ---
 
 - One purchase can contain many products.
-- Every PurchaseItem automatically creates a StockMovement of type RECEIVED.
 - Purchases are permanent historical records and should never be deleted.
 
 ---
@@ -545,6 +544,7 @@ PurchaseItem (Many)
 
 - Quantity must be greater than zero.
 - Unit cost must be greater than or equal to zero.
+- Every PurchaseItem automatically creates a StockMovement of type RECEIVED.
 
 ### Business Rules
 

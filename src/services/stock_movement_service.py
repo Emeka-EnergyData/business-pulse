@@ -3,7 +3,7 @@ from uuid import UUID
 from src.database.models.stock_movement import StockMovement
 from src.repositories.stock_movement_repository import StockMovementRepository
 
-class SupplierService:
+class StockMovementService:
     def __init__(self, stock_movement_repository:StockMovementRepository):
         self.stock_movement_repository = stock_movement_repository
          
@@ -14,4 +14,5 @@ class SupplierService:
         return self.stock_movement_repository.get_all()
     
     def get_stock_movement(self, movement_id: UUID) -> StockMovement | None:
-        self.stock_movement_repository.get_by_id(movement_id)
+        
+        return self.stock_movement_repository.get_by_id(movement_id)

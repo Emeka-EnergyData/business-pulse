@@ -19,7 +19,7 @@ class PaymentService:
         amount: Decimal,
         payment_method: str,
         payment_date: datetime,
-        references: str | None = None,
+        reference: str | None = None,
         notes: str | None = None
     ) -> Payment:
         """
@@ -54,7 +54,7 @@ class PaymentService:
             new_payment_status = "PAID"
             
         elif new_amount_paid > 0:
-            new_payment_status = "Partial"
+            new_payment_status = "PARTIAL"
             
         else:
             new_payment_status = "UNPAID"
@@ -64,7 +64,7 @@ class PaymentService:
             amount = amount,
             payment_method = payment_method.strip(),
             payment_date=payment_date,
-            references = references,
+            reference = reference,
             notes = notes,
         )
         
@@ -96,7 +96,7 @@ class PaymentService:
         """
         return self.payment_repository.get_by_id(payment_id)
     
-    def get_all_payment(self) -> list[Purchase]:
+    def get_all_payment(self) -> list[Payment]:
         """
         Retrieve all purchase record.
         """

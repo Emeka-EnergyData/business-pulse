@@ -10,9 +10,8 @@ class SaleService:
         self.sales_repository = sales_repository
 
     def create_sale(
-        self, 
-        customer_id: UUID | None = None,       
-        sale_date: Decimal,
+        self,       
+        sale_date: datetime,
         subtotal: Decimal, 
         discount: Decimal,
         total_amount: Decimal, 
@@ -20,6 +19,7 @@ class SaleService:
         remaining_balance: Decimal,
         payment_status: str,
         collection_status: str,
+        customer_id: UUID | None = None, 
         notes: str|None = None) -> Sale:
         """
         Create a new sale.
@@ -85,14 +85,14 @@ class SaleService:
         """
         return self.sales_repository.get_all()
     
-    def update_product(self, 
+    def update_sale(self, 
                        sale_id: UUID,
                        *,      
                        subtotal: Decimal | None=None, 
                        discount: Decimal | None=None,
                        total_amount: Decimal | None=None, 
                        amount_paid: Decimal | None=None,
-                       remaining_balance: Decimal,
+                       remaining_balance: Decimal | None = None,
                        payment_status: str | None=None,
                        collection_status: str | None=None,
                        notes: str|None = None) -> Sale:
