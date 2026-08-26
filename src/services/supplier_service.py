@@ -89,3 +89,6 @@ class SupplierService:
             raise ValueError("Supplier cannot be deleted because purchase history exists")
         
         return self.supplier_repository.delete(supplier_id)
+    
+    def has_purchase_history(self, supplier_id:UUID) -> bool:
+        return self.supplier_repository.has_purchase_history(supplier_id)

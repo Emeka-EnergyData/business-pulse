@@ -12,8 +12,56 @@ class PaymentService:
                  sales_repository: SalesRepository):
         self.payment_repository = payment_repository
         self.sales_repository = sales_repository
-        
+    
     def create_payment(
+        self,
+        sale_id: UUID,
+        amount: Decimal,
+        payment_method: str,
+        payment_date: datetime,
+        reference: str | None = None,
+        notes: str | None = None
+        ) -> Payment:
+        """
+        Record a payment against a sale
+        """
+        if amount <= 0:
+            raise ValueError("Payment amount must be greater than zero")
+        
+        if not payment_method.strip():
+            raise ValueError("Payment method is required")
+        
+        sale = self.sales_repository.get_by_id(sale_id)
+        
+        if sale is None:
+            raise ValueError(f"Sale with ID {sale_id} does not exist.")
+        
+        payment = Payment(
+            sale_id=sale_id,
+            amount = amount,
+            payment_method = payment_method.strip(),
+            payment_date=payment_date,
+            reference = reference,
+            notes = notes,
+        )
+        
+        db = self.payment_repository.db
+        
+        try:
+            self.payment_repository.create(payment)
+            
+            db.commit()
+            db.refresh(payment)
+            
+            return payment
+    
+        except Exception:
+    
+            db.rollback()
+            raise
+        
+                    
+    def record_payment(
         self,
         sale_id: UUID,
         amount: Decimal,

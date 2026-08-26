@@ -1,3 +1,4 @@
+from pathlib import Path
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -13,11 +14,13 @@ from src.database.connection import DATABASE_URL, TEST_DATABASE_URL
 # access to the values within the .ini file in use.
 config = context.config
 
-if config.config_file_name == "alembic.test.ini":
+config_file = Path(config.config_file_name).name
+
+if config_file == "alembic.test.ini":
     database_url = TEST_DATABASE_URL
 else:
     database_url = DATABASE_URL
-
+    
 config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.

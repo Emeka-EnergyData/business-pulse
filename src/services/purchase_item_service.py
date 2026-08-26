@@ -4,19 +4,24 @@ from datetime import datetime, timezone
 
 from src.database.models.stock_movement import StockMovement
 from src.database.models.purchase_item import PurchaseItem
+
 from src.repositories.purchase_item_repository import PurchaseItemRepository
 from src.repositories.product_repository import ProductRepository
 from src.repositories.stock_movement_repository import StockMovementRepository
+from src.repositories.purchase_repository import PurchaseRepository
+
 
 class PurchaseItemService:
     def __init__(self, 
-                 purchase_item_repository: PurchaseItemRepository, 
+                 purchase_item_repository: PurchaseItemRepository,
+                 purchase_repository: PurchaseRepository,
                  product_repository: ProductRepository, 
                  stock_movement_repository: StockMovementRepository):
         
         self.purchase_item_repository = purchase_item_repository
         self.product_repository = product_repository
         self.stock_movement_repository = stock_movement_repository
+        self.purchase_repository = purchase_repository
         
     def create_purchase_item(self,
                              purchase_id: UUID,
@@ -37,6 +42,17 @@ class PurchaseItemService:
         if unit_cost < 0:
             raise ValueError("Unit cost vannot be negative.")
         
+        purchase = self.purchase_repository.get_by_id(purchase_id)
+        
+        if purchase is None:
+            raise ValueError(f"Purchase with ID {purchase_id} does not exist.")
+                        
+        # Increase product qauntity
+        product = self.product_repository.get_by_id(product_id)
+        
+        if product is None:
+            raise ValueError(f"Product with ID {product_id} does not exist.")
+                
         purchase_item = PurchaseItem(
             purchase_id = purchase_id,
             product_id = product_id,
@@ -44,18 +60,10 @@ class PurchaseItemService:
             unit_cost = unit_cost
         )
         
-        # Increase product qauntity
-        product = self.product_repository.get_by_id(product_id)
-        
-        if product is None:
-            raise ValueError(f"Product with ID {product_id} does not exist.")
-        
         db = self.purchase_item_repository.db
         
         try:
             self.purchase_item_repository.create(purchase_item)
-            
-            self.product_repository.increase_stock(product_id, quantity) 
             
             stock_movement = StockMovement(
                 product_id = product_id,
@@ -67,6 +75,8 @@ class PurchaseItemService:
             )
         
             self.stock_movement_repository.create(stock_movement)
+            
+            self.product_repository.increase_stock(product_id, quantity) 
             
             db.commit()
             db.refresh(purchase_item)

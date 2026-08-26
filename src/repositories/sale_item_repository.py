@@ -9,8 +9,7 @@ class SaleItemRepository:
         
     def create(self, sale_item: SaleItem) -> SaleItem:
         self.db.add(sale_item)
-        self.db.commit()
-        self.db.refresh(sale_item)
+        self.db.flush()
         
         return sale_item
     

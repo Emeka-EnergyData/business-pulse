@@ -7,6 +7,8 @@ from src.repositories.product_repository import ProductRepository
 class ProductService:
     def __init__(self, product_repository: ProductRepository):
         self.product_repository = product_repository
+        
+    
 
     def create_product(self, 
                        category_id: UUID, 
@@ -26,6 +28,8 @@ class ProductService:
         :param description: The description of the product.
         :return: The created Product object.
         """
+        if self.product_repository.get_by_name(name):
+            raise ValueError(f"Product '{name}' already exists")
         if minimum_price < cost_price:
             raise ValueError("Minimum price cannot be less than cost price.")
         if target_price < minimum_price:
@@ -115,5 +119,15 @@ class ProductService:
             raise ValueError("Product not found")
         
         product.is_active = False
+        
+        return self.product_repository.update(product)
+    
+    def reactivate_product(self, product_id: UUID) -> Product:
+        product = self.product_repository.get_by_id(product_id)
+        
+        if product is None:
+            raise ValueError("Product not found")
+        
+        product.is_active = True
         
         return self.product_repository.update(product)

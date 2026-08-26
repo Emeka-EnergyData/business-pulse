@@ -77,6 +77,6 @@ class CategoryService:
             raise ValueError(f"Category with ID {category_id} does not exist")
         
         if self.category_repository.has_products(category_id):
-                    raise ValueError("Category cannot be deleted because products exists")
+            raise ValueError("Category cannot be deleted because products exist")
 
         return self.category_repository.delete(category_id)

@@ -1,10 +1,10 @@
-from src.database.connection import SessionLocal
+from src.database.connection import TestSessionLocal
 from src.repositories.categories_repository import CategoryRepository
 from src.services.category_services import CategoryService
 
 
 def main():
-    db = SessionLocal()
+    db = TestSessionLocal()
 
     try:
         repository = CategoryRepository(db)

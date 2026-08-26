@@ -48,7 +48,7 @@ class SaleService:
         if remaining_balance < 0:
             raise ValueError("Remaining balance cannot be negative")
         if amount_paid > total_amount:
-            raise ValueError("Amount paud cannot be greater than total amount")
+            raise ValueError("Amount paid cannot be greater than total amount")
         if payment_status not in {"PAID", "PARTIAL", "UNPAID"}:
             raise ValueError(f"Invalid payment status: {payment_status}")
         if collection_status not in {"COLLECTED", "PENDING_COLLECTION"}:

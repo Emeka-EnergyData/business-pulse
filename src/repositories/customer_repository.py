@@ -44,4 +44,10 @@ class CustomerRepository:
         
         return True
         
+    def get_customers_with_credit(self) -> list[Customer]:
+        stmt = (select(Customer)
+                .join(Sale, Sale.customer_id == Customer.id)
+                .where(Sale.remaining_balance > 0)
+                .distinct())
         
+        return list(self.db.scalars(stmt).all())

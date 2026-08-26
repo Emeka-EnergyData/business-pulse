@@ -22,6 +22,10 @@ class ProductRepository:
     def get_all(self) -> list[Product]:
         return self.db.query(Product).all()
     
+    def get_by_name(self, product_name: str) -> Product | None:
+        stmt = select(Product).where(Product.name == product_name)
+        return self.db.scalar(stmt)
+    
     def get_active(self) -> list[Product]:
         stmt = select(Product).where(Product.is_active.is_(True))
         return list(self.db.scalars(stmt).all())

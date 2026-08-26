@@ -29,14 +29,20 @@ class SaleItemService:
         """
         Create a sale item.
         
-        A sale item represents a product received as part of a sale.
+        A sale item represents a product sold as part of a sale.
         """
         
         if quantity <= 0:
-            raise ValueError("Quantity must be greater tahn zero.")
+            raise ValueError("Quantity must be greater than zero.")
         
-        if unit_price < 0:
-            raise ValueError("Unit cost cannot be negative.")
+        if unit_price <= 0:
+            raise ValueError("Unit price must be greater than zero.")
+        
+        # get time of sale
+        sale = self.sales_repository.get_by_id(sale_id)
+                
+        if sale is None:
+            raise ValueError(f"Sale with ID {sale_id} does not exist")
         
         # To get cost price
         
@@ -62,42 +68,26 @@ class SaleItemService:
             unit_price = unit_price,
             cost_price = cost_price,
             line_total = line_total
-        )
+        )        
         
-        # get time of sale
-        sale = self.sales_repository.get_by_id(sale_id)
-                
-        if sale is None:
-            raise ValueError(f"Sale with ID {sale_id} does not exist")
-                
-        
-        db = self.sale_item_repository.db
-        
-        try:
-            self.sale_item_repository.create(sale_item)
+        self.sale_item_repository.create(sale_item)
                     
-            self.product_repository.decrease_stock(product_id, quantity) 
-            
-            
-            stock_movement = StockMovement(
-                product_id = product_id,
-                movement_type = "SOLD",
-                quantity = quantity,
-                reference_type = "Sale",
-                reference_id = sale_id,
-                movement_date = sale.sale_date
+        self.product_repository.decrease_stock(product_id, quantity) 
+              
+        stock_movement = StockMovement(
+            product_id = product_id,
+            movement_type = "SOLD",
+            quantity = quantity,
+            reference_type = "Sale",
+            reference_id = sale_id,
+            movement_date = sale.sale_date
             )
         
-            self.stock_movement_repository.create(stock_movement)
+        self.stock_movement_repository.create(stock_movement)
             
-            db.commit()
-            db.refresh(sale_item)
-            
-            return sale_item
+        return sale_item
         
-        except Exception:
-            db.rollback()
-            raise
+
     
     def get_sale_item (self, sale_item_id: UUID) -> SaleItem | None:
         """ 
