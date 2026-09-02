@@ -8,7 +8,6 @@ from src.repositories.sales_repository import SalesRepository
 from src.services.payment_service import PaymentService
 from src.services.sales_service import SaleService
 
-
 def create_services(db_session):
     payment_repository = PaymentRepository(db_session)
     sales_repository = SalesRepository(db_session)
@@ -22,7 +21,6 @@ def create_services(db_session):
 
     return payment_service, sale_service
 
-
 def create_sale(sale_service):
     return sale_service.create_sale(
         sale_date=datetime.now(timezone.utc),
@@ -35,7 +33,6 @@ def create_sale(sale_service):
         collection_status="COLLECTED",
     )
 
-
 def create_partial_sale(sale_service):
     return sale_service.create_sale(
         sale_date=datetime.now(timezone.utc),
@@ -47,7 +44,6 @@ def create_partial_sale(sale_service):
         payment_status="PARTIAL",
         collection_status="COLLECTED",
     )
-
 
 def test_create_payment(db_session):
     payment_service, sale_service = create_services(db_session)
@@ -66,13 +62,12 @@ def test_create_payment(db_session):
     assert payment.amount == Decimal("10000.00")
     assert payment.payment_method == "Cash"
 
-
 def test_create_payment_updates_sale_amount_paid(db_session):
     payment_service, sale_service = create_services(db_session)
 
     sale = create_sale(sale_service)
 
-    payment_service.create_payment(
+    payment_service.record_payment(
         sale_id=sale.id,
         amount=Decimal("10000.00"),
         payment_method="Cash",
@@ -83,13 +78,12 @@ def test_create_payment_updates_sale_amount_paid(db_session):
 
     assert updated_sale.amount_paid == Decimal("10000.00")
 
-
 def test_create_payment_updates_remaining_balance(db_session):
     payment_service, sale_service = create_services(db_session)
 
     sale = create_sale(sale_service)
 
-    payment_service.create_payment(
+    payment_service.record_payment(
         sale_id=sale.id,
         amount=Decimal("10000.00"),
         payment_method="Cash",
@@ -100,13 +94,12 @@ def test_create_payment_updates_remaining_balance(db_session):
 
     assert updated_sale.remaining_balance == Decimal("40000.00")
 
-
-def test_create_payment_sets_partial_status(db_session):
+def test_record_payment_sets_partial_status(db_session):
     payment_service, sale_service = create_services(db_session)
 
     sale = create_sale(sale_service)
 
-    payment_service.create_payment(
+    payment_service.record_payment(
         sale_id=sale.id,
         amount=Decimal("10000.00"),
         payment_method="Cash",
@@ -117,13 +110,12 @@ def test_create_payment_sets_partial_status(db_session):
 
     assert updated_sale.payment_status == "PARTIAL"
 
-
 def test_create_payment_sets_paid_status_when_fully_paid(db_session):
     payment_service, sale_service = create_services(db_session)
 
     sale = create_sale(sale_service)
 
-    payment_service.create_payment(
+    payment_service.record_payment(
         sale_id=sale.id,
         amount=Decimal("50000.00"),
         payment_method="Cash",
@@ -136,13 +128,12 @@ def test_create_payment_sets_paid_status_when_fully_paid(db_session):
     assert updated_sale.remaining_balance == Decimal("0.00")
     assert updated_sale.payment_status == "PAID"
 
-
-def test_create_payment_adds_to_existing_amount_paid(db_session):
+def test_record_payment_adds_to_existing_amount_paid(db_session):
     payment_service, sale_service = create_services(db_session)
 
     sale = create_partial_sale(sale_service)
 
-    payment_service.create_payment(
+    payment_service.record_payment(
         sale_id=sale.id,
         amount=Decimal("10000.00"),
         payment_method="Cash",
@@ -154,7 +145,6 @@ def test_create_payment_adds_to_existing_amount_paid(db_session):
     assert updated_sale.amount_paid == Decimal("30000.00")
     assert updated_sale.remaining_balance == Decimal("20000.00")
     assert updated_sale.payment_status == "PARTIAL"
-
 
 def test_create_payment_strips_payment_method_whitespace(db_session):
     payment_service, sale_service = create_services(db_session)
@@ -169,7 +159,6 @@ def test_create_payment_strips_payment_method_whitespace(db_session):
     )
 
     assert payment.payment_method == "Cash"
-
 
 def test_create_payment_stores_reference_and_notes(db_session):
     payment_service, sale_service = create_services(db_session)
@@ -187,7 +176,6 @@ def test_create_payment_stores_reference_and_notes(db_session):
 
     assert payment.reference == "TEST-001"
     assert payment.notes == "Test payment"
-
 
 @pytest.mark.parametrize(
     "amount",
@@ -245,7 +233,7 @@ def test_create_payment_rejects_empty_payment_method(
         )
 
 
-def test_create_payment_rejects_nonexistent_sale(db_session):
+def test_record_payment_rejects_nonexistent_sale(db_session):
     payment_service, _ = create_services(db_session)
 
     sale_id = uuid4()
@@ -254,7 +242,7 @@ def test_create_payment_rejects_nonexistent_sale(db_session):
         ValueError,
         match=f"Sale with ID {sale_id} does not exist.",
     ):
-        payment_service.create_payment(
+        payment_service.record_payment(
             sale_id=sale_id,
             amount=Decimal("10000.00"),
             payment_method="Cash",
@@ -262,7 +250,7 @@ def test_create_payment_rejects_nonexistent_sale(db_session):
         )
 
 
-def test_create_payment_rejects_payment_exceeding_remaining_balance(
+def test_record_payment_rejects_payment_exceeding_remaining_balance(
     db_session,
 ):
     payment_service, sale_service = create_services(db_session)
@@ -273,7 +261,7 @@ def test_create_payment_rejects_payment_exceeding_remaining_balance(
         ValueError,
         match="Payment amount would exceed the sale's remaining balance.",
     ):
-        payment_service.create_payment(
+        payment_service.record_payment(
             sale_id=sale.id,
             amount=Decimal("30000.01"),
             payment_method="Cash",

@@ -25,6 +25,6 @@ TEST_DB_NAME = os.getenv("TEST_POSTGRES_DB")
 
 TEST_DATABASE_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{TEST_DB_NAME}"
                                
-engine = create_engine(TEST_DATABASE_URL)
+test_engine = create_engine(TEST_DATABASE_URL)
 
-TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)

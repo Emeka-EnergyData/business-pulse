@@ -1,6 +1,7 @@
 from uuid import UUID
 from datetime import date,datetime, time, timezone
-from sqlalchemy import select
+from decimal import Decimal
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from src.database.models.sales import Sale
 
@@ -62,3 +63,23 @@ class SalesRepository:
             )
 
         return list(self.db.scalars(stmt).all())
+    
+    def get_daily_sales_between_dates(
+        self, 
+        start_date: date, 
+        end_date: date) -> list[tuple[date, Decimal]]:
+        start_datetime = datetime.combine(start_date, time.min, tzinfo=timezone.utc)
+        
+        end_datetime = datetime.combine(end_date, time.max, tzinfo=timezone.utc)
+        
+        stmt=(select(func.date(Sale.sale_date).label("sale_day"), 
+                     func.sum(Sale.total_amount).label("total_sales"))
+              .where(Sale.sale_date >= start_datetime,
+                     Sale.sale_date <= end_datetime)
+              .group_by(func.date(Sale.sale_date))
+              .order_by(func.date(Sale.sale_date)
+                        )
+              )
+        
+        return list(self.db.execute(stmt).all())
+    

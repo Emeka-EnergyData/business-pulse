@@ -2,6 +2,8 @@ import streamlit as st
 from datetime import datetime, timezone
 from decimal import Decimal
 
+import pandas as pd
+
 from src.database.session import get_db
 
 from src.repositories.sales_repository import SalesRepository
@@ -11,94 +13,145 @@ from src.repositories.customer_repository import CustomerRepository
 from src.services.payment_service import PaymentService
 
 
+# PAGE CONFIGURATION
 st.set_page_config(
     page_title="Credit",
     layout="wide",
 )
 
-# Session State
 
+# VISUAL STYLING
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+    }
+
+    div[data-testid="stMetric"] {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 16px 18px;
+        min-height: 105px;
+    }
+
+    div[data-testid="stMetricLabel"] {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    div[data-testid="stMetricValue"] {
+        font-size: 1.55rem;
+        font-weight: 700;
+    }
+
+    div[data-testid="stDataFrame"] {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    h2, h3, h4 {
+        margin-bottom: 0.2rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+# SESSION STATE
 if "credit_success" not in st.session_state:
     st.session_state.credit_success = None
 
-# Database
 
+# DATABASE
 db = next(get_db())
 
 try:
-    
-    # Repositories
-    
+
+    # REPOSITORIES
     sales_repository = SalesRepository(db)
     payment_repository = PaymentRepository(db)
     customer_repository = CustomerRepository(db)
 
-    # Services    
 
+    # SERVICE
     payment_service = PaymentService(
         payment_repository=payment_repository,
         sales_repository=sales_repository,
     )
 
-    # Page Header
-    
+
+    # PAGE HEADER
     st.title("Credit")
-    st.write(
+
+    st.caption(
         "Track outstanding customer balances and record payments."
     )
 
-    # Success Message
 
-    if (
-        st.session_state.credit_success
-    ):
+    # SUCCESS MESSAGE
+    if st.session_state.credit_success:
 
         st.success(
             st.session_state.credit_success
         )
 
         st.session_state.credit_success = None
-    
-    # Load Customers    
 
+
+    # LOAD DATA
     customers = customer_repository.get_all()
+    sales = sales_repository.get_all()
 
 
-    # Find customers with outstanding credit
-
+    # FIND CUSTOMERS WITH OUTSTANDING CREDIT
     credit_customers = []
 
     for customer in customers:
 
-        credit_sales = [
+        customer_credit_sales = [
             sale
-            for sale in sales_repository.get_all()
+            for sale in sales
             if (
                 sale.customer_id == customer.id
                 and sale.remaining_balance > 0
             )
         ]
 
-        if credit_sales:
-            credit_customers.append(
-                customer
-            )
+        if customer_credit_sales:
 
-    # Credit Summary
-    
+            credit_customers.append(customer)
+
+
+    # OUTSTANDING CREDIT SALES
     all_credit_sales = [
         sale
-        for sale in sales_repository.get_all()
-        if sale.remaining_balance > 0
-        and sale.customer_id is not None
+        for sale in sales
+        if (
+            sale.remaining_balance > 0
+            and sale.customer_id is not None
+        )
     ]
 
+
+    # TOTAL OUTSTANDING CREDIT
     total_credit = sum(
         (
             sale.remaining_balance
             for sale in all_credit_sales
         ),
         Decimal("0.00"),
+    )
+
+
+    # CREDIT OVERVIEW
+    st.subheader("Credit Overview")
+
+    st.caption(
+        "Current customer balances requiring collection."
     )
 
     col1, col2, col3 = st.columns(3)
@@ -123,23 +176,22 @@ try:
             "Total Outstanding Credit",
             f"₦{total_credit:,.2f}",
         )
-    
-    # No Credit
-    
-    if not credit_customers:
 
-        st.info(
-            "There are no outstanding customer credits."
-        )
 
-    else:
+    # CUSTOMER CREDIT
+    if credit_customers:
 
         st.divider()
 
-        st.subheader("Customers With Outstanding Credit")
+        st.subheader("Customer Credit")
 
-        # Customer Selection        
+        st.caption(
+            "Select a customer to view their outstanding sales "
+            "and record payments."
+        )
 
+
+        # CUSTOMER SELECTION
         customer_options = {
             customer.name: customer.id
             for customer in credit_customers
@@ -150,29 +202,29 @@ try:
             options=list(customer_options.keys()),
         )
 
-        selected_customer_id = (
-            customer_options[
-                selected_customer_name
-            ]
+        selected_customer_id = customer_options[
+            selected_customer_name
+        ]
+
+
+        # SELECTED CUSTOMER
+        selected_customer = customer_repository.get_by_id(
+            selected_customer_id
         )
 
-        selected_customer = (
-            customer_repository.get_by_id(
-                selected_customer_id
-            )
-        )
-        
-        # Customer Credit
-        
+
+        # CUSTOMER SALES
         customer_sales = [
             sale
-            for sale in sales_repository.get_all()
+            for sale in sales
             if (
                 sale.customer_id == selected_customer_id
                 and sale.remaining_balance > 0
             )
         ]
 
+
+        # CUSTOMER BALANCE
         customer_balance = sum(
             (
                 sale.remaining_balance
@@ -181,54 +233,50 @@ try:
             Decimal("0.00"),
         )
 
-        st.write(
-            f"### {selected_customer.name}"
-        )
-
-        st.metric(
-            "Outstanding Balance",
-            f"₦{customer_balance:,.2f}",
-        )
-        
-        # Outstanding Sales        
-
-        st.divider()
-
+        # OUTSTANDING SALES
         st.subheader("Outstanding Sales")
 
-        for sale in customer_sales:
+        st.caption(
+            "Open a sale to view its products and record a payment."
+        )
+
+
+        for sale in sorted(
+            customer_sales,
+            key=lambda sale: sale.sale_date,
+        ):
 
             with st.expander(
-                f"{sale.sale_date.strftime('%d %b %Y')}  |  "
-                f"Total: ₦{sale.total_amount:,.2f}  |  "
+                f"{sale.sale_date.strftime('%d %b %Y')} | "
+                f"Total: ₦{sale.total_amount:,.2f} | "
                 f"Balance: ₦{sale.remaining_balance:,.2f}"
             ):
 
-                # Sale Information
-                
+                # SALE SUMMARY
                 col1, col2, col3 = st.columns(3)
 
                 with col1:
 
-                    st.write(
-                        f"**Sale Total**  \n"
-                        f"₦{sale.total_amount:,.2f}"
+                    st.metric(
+                        "Sale Total",
+                        f"₦{sale.total_amount:,.2f}",
                     )
 
                 with col2:
 
-                    st.write(
-                        f"**Amount Paid**  \n"
-                        f"₦{sale.amount_paid:,.2f}"
+                    st.metric(
+                        "Amount Paid",
+                        f"₦{sale.amount_paid:,.2f}",
                     )
 
                 with col3:
 
-                    st.write(
-                        f"**Remaining**  \n"
-                        f"₦{sale.remaining_balance:,.2f}"
+                    st.metric(
+                        "Remaining",
+                        f"₦{sale.remaining_balance:,.2f}",
                     )
-                
+
+
                 # Products
                 
                 st.write("**Products**")
@@ -260,53 +308,69 @@ try:
                             f"₦{line_total:,.2f}"
                         )
                 
-                # Record Payment
-                
+
                 st.divider()
 
-                st.write("**Record Payment**")
 
-                payment_amount = st.number_input(
-                    "Payment Amount",
-                    min_value=0.01,
-                    max_value=float(
-                        sale.remaining_balance
-                    ),
-                    step=100.0,
-                    value=float(
-                        sale.remaining_balance
-                    ),
-                    key=f"payment_amount_{sale.id}",
-                )
+                # RECORD PAYMENT
+                st.markdown("**Record Payment**")
 
-                payment_method = st.selectbox(
-                    "Payment Method",
-                    options=[
-                        "Cash",
-                        "Transfer",
-                        "POS",
-                        "Other",
-                    ],
-                    key=f"payment_method_{sale.id}",
-                )
+                col1, col2 = st.columns(2)
 
-                payment_date = st.date_input(
-                    "Payment Date",
-                    value=datetime.now().date(),
-                    key=f"payment_date_{sale.id}",
-                )
+                with col1:
 
-                reference = st.text_input(
-                    "Reference",
-                    placeholder="Optional payment reference",
-                    key=f"payment_reference_{sale.id}",
-                )
+                    payment_amount = st.number_input(
+                        "Payment Amount",
+                        min_value=0.01,
+                        max_value=float(
+                            sale.remaining_balance
+                        ),
+                        step=100.0,
+                        value=float(
+                            sale.remaining_balance
+                        ),
+                        key=f"payment_amount_{sale.id}",
+                    )
+
+                with col2:
+
+                    payment_method = st.selectbox(
+                        "Payment Method",
+                        options=[
+                            "Cash",
+                            "Transfer",
+                            "POS",
+                            "Other",
+                        ],
+                        key=f"payment_method_{sale.id}",
+                    )
+
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+
+                    payment_date = st.date_input(
+                        "Payment Date",
+                        value=datetime.now().date(),
+                        key=f"payment_date_{sale.id}",
+                    )
+
+                with col2:
+
+                    reference = st.text_input(
+                        "Reference",
+                        placeholder="Optional payment reference",
+                        key=f"payment_reference_{sale.id}",
+                    )
+
 
                 payment_notes = st.text_area(
                     "Payment Notes",
                     placeholder="Optional notes about this payment",
                     key=f"payment_notes_{sale.id}",
                 )
+
 
                 if st.button(
                     "Record Payment",
@@ -332,6 +396,7 @@ try:
                             notes=payment_notes or None,
                         )
 
+
                         st.session_state.credit_success = (
                             f"₦{payment_amount:,.2f} payment "
                             f"recorded for "
@@ -340,19 +405,36 @@ try:
 
                         st.rerun()
 
-                    except Exception as e:
+
+                    except Exception as exc:
 
                         st.error(
-                            f"Could not record payment: {e}"
+                            f"Could not record payment: {exc}"
                         )
-    
-    # Payment History
 
+
+    else:
+
+        st.divider()
+
+        st.success(
+            "Credit looks healthy. There are no outstanding "
+            "customer balances."
+        )
+
+
+    # PAYMENT HISTORY
     st.divider()
 
     st.subheader("Payment History")
 
+    st.caption(
+        "Recent payments recorded against customer credit."
+    )
+
+
     payments = payment_service.get_all_payment()
+
 
     if not payments:
 
@@ -368,6 +450,9 @@ try:
             reverse=True,
         )
 
+
+        payment_history = []
+
         for payment in payments:
 
             sale = sales_repository.get_by_id(
@@ -377,59 +462,54 @@ try:
             if sale is None:
                 continue
 
+
             if sale.customer:
+
                 customer_name = sale.customer.name
 
             else:
+
                 customer_name = "Walk-in Customer"
 
-            with st.expander(
-                f"{payment.payment_date.strftime('%d %b %Y')}  |  "
-                f"{customer_name}  |  "
-                f"₦{payment.amount:,.2f}"
-            ):
 
-                col1, col2, col3 = st.columns(3)
-
-                with col1:
-
-                    st.write(
-                        f"**Customer**  \n"
-                        f"{customer_name}"
-                    )
-
-                with col2:
-
-                    st.write(
-                        f"**Amount**  \n"
+            payment_history.append(
+                {
+                    "Date": payment.payment_date.strftime(
+                        "%d %b %Y"
+                    ),
+                    "Customer": customer_name,
+                    "Amount": (
                         f"₦{payment.amount:,.2f}"
-                    )
+                    ),
+                    "Method": payment.payment_method,
+                    "Reference": (
+                        payment.reference
+                        if payment.reference
+                        else "-"
+                    ),
+                }
+            )
 
-                with col3:
 
-                    st.write(
-                        f"**Method**  \n"
-                        f"{payment.payment_method}"
-                    )
+        if payment_history:
 
-                st.write(
-                    f"**Payment Date:** "
-                    f"{payment.payment_date.strftime('%d %b %Y')}"
-                )
+            payment_history_df = pd.DataFrame(
+                payment_history
+            )
 
-                if payment.reference:
+            st.dataframe(
+                payment_history_df,
+                width="stretch",
+                hide_index=True,
+                height=350,
+            )
 
-                    st.write(
-                        f"**Reference:** "
-                        f"{payment.reference}"
-                    )
+        else:
 
-                if payment.notes:
+            st.info(
+                "No valid payment records were found."
+            )
 
-                    st.write(
-                        f"**Notes:** "
-                        f"{payment.notes}"
-                    )
 
 finally:
 

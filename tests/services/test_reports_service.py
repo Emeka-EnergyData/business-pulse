@@ -1,9 +1,10 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import Mock
 
 from src.services.reports_service import ReportsService
+from src.database.models import Sale
 
 
 def create_service():
@@ -57,7 +58,7 @@ def test_get_sales_summary_with_no_sales():
 
     result = service.get_sales_summary(
         date(2026, 8, 1),
-        date(2026, 8, 31),
+        date(2026, 8, 31)
     )
 
     assert result["number_of_sales"] == 0
@@ -205,6 +206,27 @@ def test_get_business_summary_with_no_data():
         "total_sales": Decimal("0.00"),
         "total_paid": Decimal("0.00"),
         "total_credit": Decimal("0.00"),
+        "average_sale": Decimal("0.00"),
+        "collection_rate": Decimal("0.00"),
+        "credit_rate": Decimal("0.00"),
         "number_of_purchases": 0,
-        "total_purchases": Decimal("0.00"),
+        "total_purchases": Decimal("0.00")
     }
+    
+def test_get_daily_sales(db_session):
+    service, sales_repository, _ = create_service()
+
+    sales_repository.get_daily_sales_between_dates.return_value = [
+        (
+            date(2026, 8, 28),
+            Decimal("25000.00")
+       )
+    ]
+    results = service.get_daily_sale(
+        date(2026, 8, 28),
+        date(2026, 8, 28)
+    )
+    
+    assert len(results) == 1
+    assert results[0]["date"] == date(2026, 8, 28)
+    assert results[0]["total_sales"] == Decimal("25000.00")

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from src.repositories.sales_repository import SalesRepository
@@ -32,12 +32,32 @@ class ReportsService:
             total_sales += sale.total_amount
             total_paid += sale.amount_paid
             total_credit += sale.remaining_balance
+            
+        number_of_sales = len(sales)
+            
+        if number_of_sales > 0:
+            average_sale = total_sales/number_of_sales
+                
+        else:
+            average_sale = Decimal("0.00")
+                
+        if total_sales > 0:
+            collection_rate =(total_paid/total_sales) * Decimal("100")
+                
+            credit_rate = (total_credit/total_sales) * Decimal("100")
+                
+        else:
+            collection_rate = Decimal("0.00")
+            credit_rate = Decimal("0.00")
 
         return {
             "number_of_sales": len(sales),
             "total_sales": total_sales,
             "total_paid": total_paid,
             "total_credit": total_credit,
+            "average_sale": average_sale,
+            "collection_rate":collection_rate,
+            "credit_rate":credit_rate
         }
 
     def get_purchase_summary(
@@ -82,3 +102,34 @@ class ReportsService:
             **sales_summary,
             **purchase_summary,
         }
+        
+    def get_daily_sale(
+        self,
+        start_date: date,
+        end_date: date
+    ) -> list[dict]:
+        """
+        Return daily sales totals for the selected date range
+        """
+        
+        results = self.sales_repository.get_daily_sales_between_dates(start_date, end_date)
+        
+        sales_by_date = {
+            sale_day: total_sales for sale_day, total_sales in results
+        }
+        
+        daily_sales = []
+        
+        current_date = start_date
+        
+        while current_date <= end_date:
+            daily_sales.append(
+                {
+                    "date": current_date,
+                    "total_sales": sales_by_date.get(current_date, Decimal("0.00"))
+                    }
+                )
+            
+            current_date += timedelta(days=1)
+        
+        return daily_sales 

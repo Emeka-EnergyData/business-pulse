@@ -279,7 +279,7 @@ def test_create_sale_item_rejects_zero_quantity(db_session):
     
     with pytest.raises(
         ValueError,
-        match="Quantity must be greater tahn zero."
+        match="Quantity must be greater than zero."
         ):
         sale_item_service.create_sale_item(
             sale_id=sale.id,
@@ -299,7 +299,7 @@ def test_create_sale_item_rejects_negative_quantity(db_session):
     
     with pytest.raises(
         ValueError,
-        match="Quantity must be greater tahn zero."
+        match="Quantity must be greater than zero."
         ):
         
         sale_item_service.create_sale_item(
@@ -320,7 +320,7 @@ def test_create_sale_item_rejects_negative_unit_price(db_session):
     
     with pytest.raises(
         ValueError,
-        match="Unit price cannot be negative."
+        match="Unit price must be greater than zero."
         ):
         
         sale_item_service.create_sale_item(

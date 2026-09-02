@@ -99,7 +99,6 @@ try:
     else:
         for product in products:
             with st.container(border = True):
-                st.divider()
                 col1, col2, col3, col4, col5 = st.columns(5)
                 
                 with col1:

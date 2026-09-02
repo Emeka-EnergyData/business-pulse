@@ -304,6 +304,7 @@ StockMovement (Many)
 ---
 
 - Product name cannot be empty.
+- Product name must be unique
 - Current stock cannot be negative.
 - Cost price must be greater than or equal to zero.
 - Target price must be greater than or equal to minimum price.

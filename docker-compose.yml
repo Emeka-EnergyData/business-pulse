@@ -20,6 +20,9 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
 volumes:  
   postgres_data:

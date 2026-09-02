@@ -2,19 +2,36 @@
 __pycache__/
 *.pyc
 .venv/
+venv/
+*.py[cod]
+*.pyo
 
 # Environment
 .env
+.env.*
+!.env.example
 
 # Streamlit
 .streamlit/
 
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
 # Database
 *.db
+*.sqlite3
+*.sqlite
 
 # IDE
 .vscode/
 .idea/
+*.code-workspace
 
 # macOS
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
