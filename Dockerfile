@@ -14,6 +14,8 @@ COPY . .
 
 ENV STREAMLIT_SERVER_FILE_WATCHER_TYPE=none
 
+RUN chmod +x start.sh
+
 EXPOSE 8501
 
-CMD ["streamlit", "run", "Home.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["./start.sh"]
