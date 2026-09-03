@@ -92,7 +92,7 @@ Reports can be used to understand:
 - Credit and payments
 - Revenue and profit-related metrics
 
-### 🤖 AI-Assisted Analysis
+### AI-Assisted Analysis
 
 AI is used as an assistant, rather than as the source of truth for business data.
 
