@@ -11,7 +11,7 @@ from src.repositories.sales_repository import SalesRepository
 from src.repositories.purchase_repository import PurchaseRepository
 
 from src.services.reports_service import ReportsService
-from src.ai.ollama_client import OllamaClient
+from src.ai.gemini_client import GeminiClient
 from src.ai.insights import InsightsService
 from src.ai.chatbot import BusinessChatService
 
@@ -116,7 +116,7 @@ try:
         generate_report = st.button(
             "Generate Report",
             type="primary",
-            use_container_width=True,
+            width="stretch"
         )
 
 
@@ -391,10 +391,10 @@ try:
 
                     try:
 
-                        ollama_client = OllamaClient()
+                        gemini_client = GeminiClient()
 
                         insights_service = InsightsService(
-                            ollama_client
+                            gemini_client
                         )
 
                         insights = (
@@ -469,10 +469,10 @@ try:
 
                         try:
 
-                            ollama_client = OllamaClient()
+                            gemini_client = GeminiClient()
 
                             chat_service = BusinessChatService(
-                                ollama_client
+                                gemini_client
                             )
 
                             response = chat_service.ask(

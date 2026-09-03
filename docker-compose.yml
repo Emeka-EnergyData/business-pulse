@@ -24,6 +24,22 @@ services:
       - 8.8.8.8
       - 8.8.4.4
 
+    business-pulse:
+      build: .
+      container_name: business_pulse_app
+      restart: unless-stopped
+      ports:
+        - "8501:8501"
+      environment:
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_PORT: ${POSTGRES_PORT}
+        GEMINI_API_KEY: ${GEMINI_API_KEY}
+        GEMINI_MODEL: ${GEMINI_MODEL}
+      depends_on:
+        - postgres
+
 volumes:  
   postgres_data:
   ollama_data:

@@ -1,11 +1,11 @@
-from src.ai.ollama_client import OllamaClient
+from src.ai.gemini_client import GeminiClient
 from src.ai.prompts import (BUSINESS_CHAT_SYSTEM_PROMPT, build_business_chat_prompt)
 
 
 class BusinessChatService:
-    def __init__(self, ollama_client: OllamaClient):
-        self.ollama_client = ollama_client
-
+    def __init__(self, gemini_client: GeminiClient):
+        self.gemini_client = gemini_client
+    
     def ask(
         self,
         summary: dict,
@@ -20,7 +20,7 @@ class BusinessChatService:
             user_question
         )
 
-        return self.ollama_client.generate(
+        return self.gemini_client.generate(
             prompt,
             system_prompt=BUSINESS_CHAT_SYSTEM_PROMPT
         )
