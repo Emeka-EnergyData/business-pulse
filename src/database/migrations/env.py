@@ -1,13 +1,10 @@
 from pathlib import Path
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
 
 from src.database.base import Base
-from src.database.connection import DATABASE_URL, TEST_DATABASE_URL
+from src.database.connection import engine, test_engine
 
 
 # this is the Alembic Config object, which provides
@@ -17,11 +14,9 @@ config = context.config
 config_file = Path(config.config_file_name).name
 
 if config_file == "alembic.test.ini":
-    database_url = TEST_DATABASE_URL
+    connectable = test_engine
 else:
-    database_url = DATABASE_URL
-    
-config.set_main_option("sqlalchemy.url", database_url)
+    connectable = engine
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -71,11 +66,6 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
 
     with connectable.connect() as connection:
         context.configure(
